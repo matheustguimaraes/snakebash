@@ -66,7 +66,7 @@ void clean_terminal() { system("clear"); }
 
 static int life;
 static int current_size;
-static double game_velocity = 0.2;
+static double game_velocity = 0.15;
 static char previous_instruction;
 
 typedef struct snake {
@@ -78,6 +78,31 @@ typedef struct candy {
 } Candy;
 
 int generate_random() { return rand() % 10; }
+
+void save_game(Snake *snake, Candy *candy) {
+    FILE *txt_document = fopen("saved_game.txt", "w+");
+    for(int i = 0; i < current_size; i++) {
+        for(int j = 0; j < 2; j++) {
+            fprintf(txt_document, "%d ", snake->coordinates[i][j]);
+            }
+        fprintf(txt_document, "\n");
+    }
+    fclose(txt_document);
+}
+
+void clear_memory_space(Snake *snake, Candy *candy) {
+    free(snake->coordinates);
+    free(candy->coordinates);
+    if (SO) { resetTermios(); }
+}
+
+void set_time(double time) {
+    clock_t begin = clock();
+    while (1) {
+        double time_spent = (double) (clock() - begin) / CLOCKS_PER_SEC;
+        if (time_spent >= time) { break; }
+    }
+}
 
 void set_snake(Snake *snake) {
     int aux = 0;
@@ -104,7 +129,8 @@ void increase_snake(Snake *snake, Candy *candy) {
         }
     } else if (current_size == MAX_SIZE) {
         clean_terminal();
-        puts("You win!");
+        puts("YOU WIN!");
+        clear_memory_space(snake, candy);
         exit(1);
     }
 }
@@ -122,10 +148,8 @@ void limit_snake(Snake *snake, Candy *candy) {
              snake->coordinates[0][1] > (COLUMN - 2)) || (snake->coordinates[0][0] == snake->coordinates[i][0] &&
                                                           snake->coordinates[0][1] == snake->coordinates[i][1])) {
             clean_terminal();
-            puts("Game Over!");
-            free(snake->coordinates);
-            free(candy->coordinates);
-            if (SO) { resetTermios(); }
+            puts("GAME OVER!");
+            clear_memory_space(snake, candy);
             exit(1);
         }
     }
@@ -199,14 +223,6 @@ char organize_moves(char input) {
     return input;
 }
 
-void set_time(double tempo) {
-    clock_t begin = clock();
-    while (1) {
-        double time_spent = (double) (clock() - begin) / CLOCKS_PER_SEC;
-        if (time_spent >= tempo) break;
-    }
-}
-
 void insert_commands() {
     char input = 'd';
     Candy candy;
@@ -245,22 +261,28 @@ void insert_commands() {
             case 'q':
                 clean_terminal();
                 break;
+            case 'r':
+                generate_game(&snake, &candy, matrix);
+                save_game(&snake, &candy);
+                printf("SAVING THE GAME\n");
+                sleep(1);
+                input = previous_instruction;
+                break;
             default:
                 clean_terminal();
                 print_matrix(matrix);
-                printf("As teclas permitidas sao: W, S, A, D\n");
-                printf("Para encerrar o programa: Q\n");
+                printf("THE ALLOWED KEYS ARE: W, S, A, D\n");
+                printf("FOR LEAVE THE GAME, TYPE: Q\n");
                 sleep(1);
                 input = previous_instruction;
                 break;
         }
     } while (input != 'q');
-    free(snake.coordinates);
-    free(candy.coordinates);
+    clear_memory_space(&snake, &candy);
 }
 
 int main() {
     insert_commands();
-    if (SO) { resetTermios(); }
+    printf("THE GAME WAS FINISHED\n");
     return 0;
 }
