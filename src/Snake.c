@@ -122,7 +122,7 @@ void limit_snake(Snake *snake, Candy *candy) {
              snake->coordinates[0][1] > (COLUMN - 2)) || (snake->coordinates[0][0] == snake->coordinates[i][0] &&
                                                           snake->coordinates[0][1] == snake->coordinates[i][1])) {
             clean_terminal();
-            puts("Game Over!");
+            puts("GAME OVER!");
             free(snake->coordinates);
             free(candy->coordinates);
             if (SO) { resetTermios(); }
@@ -199,12 +199,23 @@ char organize_moves(char input) {
     return input;
 }
 
-void set_time(double tempo) {
+void set_time(double time) {
     clock_t begin = clock();
     while (1) {
         double time_spent = (double) (clock() - begin) / CLOCKS_PER_SEC;
-        if (time_spent >= tempo) break;
+        if (time_spent >= time) break;
     }
+}
+
+void save_game(Snake *snake, Candy *candy) {
+    FILE *txt_document = fopen("saved_game.txt", "w+");
+    for(int i = 0; i < current_size; i++) {
+        for(int j = 0; j < 2; j++) {
+            fprintf(txt_document, "%d ", snake->coordinates[i][j]);
+            }
+        fprintf(txt_document, "\n");
+    }
+    fclose(txt_document);
 }
 
 void insert_commands() {
@@ -245,11 +256,20 @@ void insert_commands() {
             case 'q':
                 clean_terminal();
                 break;
+            case 'r':
+                // clean_terminal();
+                // print_matrix(matrix);
+                generate_game(&snake, &candy, matrix);
+                save_game(&snake, &candy);
+                printf("SAVING THE GAME\n");
+                sleep(1);
+                input = previous_instruction;
+                break;
             default:
                 clean_terminal();
                 print_matrix(matrix);
-                printf("As teclas permitidas sao: W, S, A, D\n");
-                printf("Para encerrar o programa: Q\n");
+                printf("THE ALLOWED KEYS ARE: W, S, A, D\n");
+                printf("FOR LEAVE THE GAME, TYPE: Q\n");
                 sleep(1);
                 input = previous_instruction;
                 break;
@@ -262,5 +282,6 @@ void insert_commands() {
 int main() {
     insert_commands();
     if (SO) { resetTermios(); }
+    printf("GAME WAS FINISHED\n");
     return 0;
 }
