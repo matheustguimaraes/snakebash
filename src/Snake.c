@@ -273,14 +273,6 @@ void read_game(Snake *snake, Candy *candy) {
 
     fclose(txtDocument);
 
-//   aux = 0;
-//   for (int x = 0; x < lines; x++) {
-//       printf("posicao no vetor [%d] = %d\n", x, txtValues[x]);
-//       aux++;
-//   }
-
-//   printf("/////// NUMERO DE LINHAS /////// = %d\n", lines);
-
 //    Snake size stored in txt file
     file_snake_size = lines - 2;
 //    Candy positions stored in txt file
@@ -288,20 +280,9 @@ void read_game(Snake *snake, Candy *candy) {
 //    Snake size stored in txt file
     current_size = file_snake_size / 2;
 
-//   printf("/////// TAMANHO DA COBRA /////// = %d\n", file_snake_size);
-
-//   for (int t = 0; t < lines; t++) { printf("ARQUIVO [%d] = [%d]\n", t, txtValues[t]); }
-
-//   for (int x = 0; x < (file_snake_size / 2); x++) {
-//       for (int y = 0; y < positions_x_y; y++) {
-//           printf("SNAKE ========== [%d]\n", snake->coordinates[x][y]);
-//       }
-//   }
-
 //    Create snake and candy
     set_snake(snake, 0);
     set_candy(candy, 0);
-
 
 //    Declare snake with his positions using the txtValues array
     aux = 0;
