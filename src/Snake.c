@@ -85,17 +85,6 @@ char read_keyboard(char input){
     return input;
 }
 
-void save_game(Snake *snake, Candy *candy) {
-    FILE *txt_document = fopen("saved_game.txt", "w+");
-    for(int i = 0; i < current_size; i++) {
-        for(int j = 0; j < 2; j++) {
-            fprintf(txt_document, "%d ", snake->coordinates[i][j]);
-            }
-        fprintf(txt_document, "\n");
-    }
-    fclose(txt_document);
-}
-
 void clear_memory_space(Snake *snake, Candy *candy) {
     free(snake->coordinates);
     free(candy->coordinates);
@@ -229,12 +218,98 @@ char organize_moves(char input) {
     return input;
 }
 
+void save_game(Snake *snake, Candy *candy) {
+    FILE *txt_document = fopen("saved_game.txt", "w+");
+    for(int i = 0; i < current_size; i++) {
+        for(int j = 0; j < 2; j++) {
+            fprintf(txt_document, "%d ", snake->coordinates[i][j]);
+            }
+        fprintf(txt_document, "\n");
+    }
+    fclose(txt_document);
+}
+
+void read_game(Snake *snake, Candy *candy) {
+    FILE *txtDocument = fopen("saved_game.txt", "r");
+    char txtValues[5000];
+    int reference, lines = -1, columns = -1;
+
+    // txtDocument = fopen("/home/matheus/Dropbox/treinamento-pdi/results/10_image.txt", "r");
+
+	  while (!feof(txtDocument)) {
+		      fgets(txtValues, 5000, txtDocument);
+		      lines++;
+	  }
+
+	  rewind(txtDocument);
+
+	  while (!feof(txtDocument)) {
+		      fscanf(txtDocument, "%d", &reference);
+		      columns++;
+	  }
+
+	  columns = columns / lines;
+
+	  rewind(txtDocument);
+
+	    // Mat_<uchar> tiger(lines, columns, 1);
+
+	  for (int x = 0; x < lines; x++) {
+		      for (int y = 0; y < columns; y++) {
+		          fscanf(txtDocument, "%d", &reference);
+		          snake->coordinates[x][y] = reference;
+		      }
+	  }
+
+    /*
+    while(!feof(txt_document)) {
+        fscanf(txt_document, " %d", &x);
+        // snake->coordinates[i][j] = x;
+        reference[temp_position] = x;
+        temp_position++;
+    }
+
+    int temp = 0;
+    for(int i = 0; i < temp_position; i++) {
+        for(int j = 0; j < 2; j++) {
+            snake->coordinates[i][j] = reference[temp];
+            temp++;
+        }
+    }
+    */
+
+
+    // rewind(txt_document);
+
+    // for(int i = 0; i < temp_position; i++) {
+        // for(int j = 0; j < 2; j++) {
+            // fscanf(txt_document, "%d\n", &reference);
+            // snake->coordinates[i][j] = reference;
+            // }
+        // fprintf(txt_document, "\n");
+    // }
+    fclose(txtDocument);
+}
+
+void initiate_game(Snake *snake, Candy *candy) {
+    char choice;
+    printf("DO YOU WANT TO INITIATE A NEW GAME, OR RESTORE A SAVED ONE?");
+    printf("IF INITIATE: TYPE 'N', ELSE IF RESTORE 'R'");
+    scanf("%c", &choice);
+    clean_terminal();
+    if(choice == 'n') {
+        set_snake(snake);
+        set_candy(candy);
+    } else if (choice == 'r') {
+        read_game(snake, candy);
+    }
+}
+
 void insert_commands() {
     char input = 'd';
     Candy candy;
     Snake snake;
-    set_snake(&snake);
-    set_candy(&candy);
+    initiate_game(&snake, &candy);
     do {
         char matrix[ROW + 1][COLUMN];
         generate_game(&snake, &candy, matrix);
