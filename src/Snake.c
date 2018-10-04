@@ -79,6 +79,12 @@ typedef struct candy {
 
 int generate_random() { return rand() % 10; }
 
+char read_keyboard(char input){
+    char terminal = getch();
+    if (terminal != EOF) { input = terminal; }
+    return input;
+}
+
 void save_game(Snake *snake, Candy *candy) {
     FILE *txt_document = fopen("saved_game.txt", "w+");
     for(int i = 0; i < current_size; i++) {
@@ -234,8 +240,7 @@ void insert_commands() {
         generate_game(&snake, &candy, matrix);
         previous_instruction = input;
         set_time(game_velocity);
-        char terminal = getch();
-        if (terminal != EOF) { input = terminal; }
+        input = read_keyboard(input);
         input = organize_moves(input);
         switch (input) {
             case 'w':
