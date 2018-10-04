@@ -66,8 +66,8 @@ void clean_terminal() { system("clear"); }
 
 static int life;
 static int current_size;
-static double game_velocity = 0.15;
 static char previous_instruction;
+static double game_velocity = 0.15;
 
 typedef struct snake {
     int **coordinates;
@@ -79,7 +79,14 @@ typedef struct candy {
 
 int generate_random() { return rand() % 10; }
 
-char read_keyboard(char input){
+void flush_in() {
+    int ch;
+    do {
+        ch = fgetc(stdin);
+    } while (ch != EOF && ch != '\n');
+}
+
+char read_keyboard(char input) {
     char terminal = getch();
     if (terminal != EOF) { input = terminal; }
     return input;
@@ -99,15 +106,30 @@ void set_time(double time) {
     }
 }
 
-void set_snake(Snake *snake) {
-    int aux = 0;
-    current_size = 3;
-    snake->coordinates = (int **) malloc(current_size * sizeof(int **));
-    for (int i = 0; i < current_size; ++i) { snake->coordinates[i] = (int *) malloc(2 * sizeof(int *)); }
-    for (int k = current_size; k > 0; --k) {
-        snake->coordinates[aux][0] = 0;
-        snake->coordinates[aux][1] = k;
-        aux++;
+void set_snake(Snake *snake, int begin) {
+    if (begin == 1) {
+        int aux = 0;
+        current_size = 3;
+        snake->coordinates = (int **) malloc(current_size * sizeof(int **));
+        for (int i = 0; i < current_size; ++i) { snake->coordinates[i] = (int *) malloc(2 * sizeof(int *)); }
+        for (int k = current_size; k > 0; --k) {
+            snake->coordinates[aux][0] = 0;
+            snake->coordinates[aux][1] = k;
+            aux++;
+        }
+    } else if (begin == 0) {
+        int aux = 0;
+        snake->coordinates = (int **) malloc(current_size * sizeof(int **));
+        for (int i = 0; i < current_size; ++i) { snake->coordinates[i] = (int *) malloc(2 * sizeof(int *)); }
+        for (int k = current_size; k > 0; --k) {
+            snake->coordinates[aux][0] = ROW;
+            snake->coordinates[aux][1] = 0;
+            aux++;
+        }
+    }
+    if (snake->coordinates == NULL) {
+        printf("ALLOCATION WAS UNSUCCESSFUL IN SNAKE\n");
+        exit(1);
     }
 }
 
@@ -156,10 +178,18 @@ void print_snake(Snake *snake, char matrix[ROW][COLUMN]) {
     }
 }
 
-void set_candy(Candy *candy) {
+void set_candy(Candy *candy, int begin) {
     life = 1;
     candy->coordinates = (int *) malloc(2 * sizeof(int));
-    for (int i = 0; i < 2; ++i) { candy->coordinates[i] = 20; }
+    if (begin == 1) {
+        for (int i = 0; i < 2; ++i) { candy->coordinates[i] = 20; }
+    } else if (begin == 0) {
+        for (int i = 0; i < 2; ++i) { candy->coordinates[i] = 0; }
+    }
+    if (candy->coordinates == NULL) {
+        printf("ALLOCATION WAS UNSUCCESSFUL IN CANDY\n");
+        exit(1);
+    }
 }
 
 void print_candy(char matrix[ROW][COLUMN], Candy *candy, Snake *snake) {
@@ -205,6 +235,105 @@ void generate_game(Snake *snake, Candy *candy, char matrix[ROW][COLUMN]) {
     print_matrix(matrix);
 }
 
+void save_game(Snake *snake, Candy *candy) {
+    FILE *txt_document = fopen("saved_game.txt", "w+");
+    for (int i = 0; i < current_size; i++) {
+        for (int j = 0; j < 2; j++) {
+            fprintf(txt_document, "%d\n", snake->coordinates[i][j]);
+        }
+    }
+    for (int k = 0; k < 2; k++) { fprintf(txt_document, "%d\n", candy->coordinates[k]); }
+    fclose(txt_document);
+}
+
+void read_game(Snake *snake, Candy *candy) {
+    FILE *txtDocument = fopen("saved_game.txt", "r");
+    int txtValues[198];
+    int reference, lines = -1, file_snake_size = 0, file_candy_position = 0, aux = 0, positions_x_y = 2;
+
+//    Finish program if document was not found
+    if ((txtDocument == NULL)) {
+        printf("FILE NOT FOUND");
+        exit(1);
+    }
+
+    while (!feof(txtDocument)) {
+		    fgets(txtValues, 198, txtDocument);
+		    lines++;
+    }
+
+    rewind(txtDocument);
+
+//    Store file positions in array of integers
+    for (int x = 0; x < lines; x++) {
+        fscanf(txtDocument, "%d", &reference);
+        txtValues[aux] = reference;
+        aux++;
+    }
+
+    fclose(txtDocument);
+
+//   aux = 0;
+//   for (int x = 0; x < lines; x++) {
+//       printf("posicao no vetor [%d] = %d\n", x, txtValues[x]);
+//       aux++;
+//   }
+
+//   printf("/////// NUMERO DE LINHAS /////// = %d\n", lines);
+
+//    Snake size stored in txt file
+    file_snake_size = lines - 2;
+//    Candy positions stored in txt file
+    file_candy_position = lines - 2;
+//    Snake size stored in txt file
+    current_size = file_snake_size / 2;
+
+//   printf("/////// TAMANHO DA COBRA /////// = %d\n", file_snake_size);
+
+//   for (int t = 0; t < lines; t++) { printf("ARQUIVO [%d] = [%d]\n", t, txtValues[t]); }
+
+//   for (int x = 0; x < (file_snake_size / 2); x++) {
+//       for (int y = 0; y < positions_x_y; y++) {
+//           printf("SNAKE ========== [%d]\n", snake->coordinates[x][y]);
+//       }
+//   }
+
+//    Create snake and candy
+    set_snake(snake, 0);
+    set_candy(candy, 0);
+
+
+//    Declare snake with his positions using the txtValues array
+    aux = 0;
+    for (int x = 0; x < current_size; x++) {
+        for (int y = 0; y < positions_x_y; y++) {
+            snake->coordinates[x][y] = txtValues[aux];
+            aux++;
+        }
+    }
+
+//    Declare candy with his positions using the txtValues array
+    aux = 0;
+    for (int k = file_candy_position; k < lines; k++) { candy->coordinates[aux] = txtValues[k]; }
+}
+
+void initiate_game(Snake *snake, Candy *candy) {
+    char choice = 'a';
+    do {
+        printf("DO YOU WANT TO INITIATE A NEW GAME, OR RESTORE A SAVED ONE?\n");
+        printf("IF INITIATE: TYPE 'N', ELSE IF RESTORE 'R': \n");
+        scanf("%c", &choice);
+        flush_in();
+        clean_terminal();
+        if (choice == 'n') {
+            set_snake(snake, 1);
+            set_candy(candy, 1);
+        } else if (choice == 'r') {
+            read_game(snake, candy);
+        }
+    } while (choice != 'r' && choice != 'n' && choice != 'R' && choice != 'N');
+}
+
 char organize_moves(char input) {
     if (previous_instruction == 'w' && input == 's') {
         input = 'w';
@@ -218,98 +347,11 @@ char organize_moves(char input) {
     return input;
 }
 
-void save_game(Snake *snake, Candy *candy) {
-    FILE *txt_document = fopen("saved_game.txt", "w+");
-    for(int i = 0; i < current_size; i++) {
-        for(int j = 0; j < 2; j++) {
-            fprintf(txt_document, "%d ", snake->coordinates[i][j]);
-            }
-        fprintf(txt_document, "\n");
-    }
-    fclose(txt_document);
-}
-
-void read_game(Snake *snake, Candy *candy) {
-    FILE *txtDocument = fopen("saved_game.txt", "r");
-    char txtValues[5000];
-    int reference, lines = -1, columns = -1;
-
-    // txtDocument = fopen("/home/matheus/Dropbox/treinamento-pdi/results/10_image.txt", "r");
-
-	  while (!feof(txtDocument)) {
-		      fgets(txtValues, 5000, txtDocument);
-		      lines++;
-	  }
-
-	  rewind(txtDocument);
-
-	  while (!feof(txtDocument)) {
-		      fscanf(txtDocument, "%d", &reference);
-		      columns++;
-	  }
-
-	  columns = columns / lines;
-
-	  rewind(txtDocument);
-
-	    // Mat_<uchar> tiger(lines, columns, 1);
-
-	  for (int x = 0; x < lines; x++) {
-		      for (int y = 0; y < columns; y++) {
-		          fscanf(txtDocument, "%d", &reference);
-		          snake->coordinates[x][y] = reference;
-		      }
-	  }
-
-    /*
-    while(!feof(txt_document)) {
-        fscanf(txt_document, " %d", &x);
-        // snake->coordinates[i][j] = x;
-        reference[temp_position] = x;
-        temp_position++;
-    }
-
-    int temp = 0;
-    for(int i = 0; i < temp_position; i++) {
-        for(int j = 0; j < 2; j++) {
-            snake->coordinates[i][j] = reference[temp];
-            temp++;
-        }
-    }
-    */
-
-
-    // rewind(txt_document);
-
-    // for(int i = 0; i < temp_position; i++) {
-        // for(int j = 0; j < 2; j++) {
-            // fscanf(txt_document, "%d\n", &reference);
-            // snake->coordinates[i][j] = reference;
-            // }
-        // fprintf(txt_document, "\n");
-    // }
-    fclose(txtDocument);
-}
-
-void initiate_game(Snake *snake, Candy *candy) {
-    char choice;
-    printf("DO YOU WANT TO INITIATE A NEW GAME, OR RESTORE A SAVED ONE?");
-    printf("IF INITIATE: TYPE 'N', ELSE IF RESTORE 'R'");
-    scanf("%c", &choice);
-    clean_terminal();
-    if(choice == 'n') {
-        set_snake(snake);
-        set_candy(candy);
-    } else if (choice == 'r') {
-        read_game(snake, candy);
-    }
-}
-
 void insert_commands() {
-    char input = 'd';
     Candy candy;
     Snake snake;
     initiate_game(&snake, &candy);
+    char input = 'd';
     do {
         char matrix[ROW + 1][COLUMN];
         generate_game(&snake, &candy, matrix);
