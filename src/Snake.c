@@ -306,7 +306,7 @@ void initiate_game(Snake *snake, Candy *candy) {
         scanf("%c", &choice);
         flush_in();
         clean_terminal();
-        if (choice == 'n') {
+        if (choice == 'n' || choice == 'N') {
             set_snake(snake, 1);
             set_candy(candy, 1);
         } else if (choice == 'r') {
@@ -316,13 +316,17 @@ void initiate_game(Snake *snake, Candy *candy) {
 }
 
 char organize_moves(char input) {
-    if (previous_instruction == 'w' && input == 's') {
+    if ((previous_instruction == 'w' || previous_instruction == 'W') && 
+	(input == 's' || input == 'S')) {
         input = 'w';
-    } else if (previous_instruction == 's' && input == 'w') {
+    } else if ((previous_instruction == 's' || previous_instruction == 'S') &&
+		(input == 'w' || input == 'W')) {
         input = 's';
-    } else if (previous_instruction == 'a' && input == 'd') {
+    } else if ((previous_instruction == 'a' || previous_instruction == 'A') &&
+		(input == 'd' || input == 'D')) {
         input = 'a';
-    } else if (previous_instruction == 'd' && input == 'a') {
+    } else if ((previous_instruction == 'd' || previous_instruction == 'D') &&
+		(input == 'a' || input == 'A')) {
         input = 'd';
     }
     return input;
@@ -342,29 +346,35 @@ void insert_commands() {
         input = organize_moves(input);
         switch (input) {
             case 'w':
+            case 'W':
                 guiding_snake(&snake);
                 snake.coordinates[0][0]--;
                 generate_game(&snake, &candy, matrix);
                 break;
             case 's':
+            case 'S':
                 guiding_snake(&snake);
                 snake.coordinates[0][0]++;
                 generate_game(&snake, &candy, matrix);
                 break;
             case 'a':
+            case 'A':
                 guiding_snake(&snake);
                 snake.coordinates[0][1]--;
                 generate_game(&snake, &candy, matrix);
                 break;
             case 'd':
+            case 'D':
                 guiding_snake(&snake);
                 snake.coordinates[0][1]++;
                 generate_game(&snake, &candy, matrix);
                 break;
             case 'q':
+            case 'Q':
                 clean_terminal();
                 break;
             case 'r':
+            case 'R':
                 generate_game(&snake, &candy, matrix);
                 save_game(&snake, &candy);
                 printf("SAVING THE GAME\n");
@@ -380,7 +390,7 @@ void insert_commands() {
                 input = previous_instruction;
                 break;
         }
-    } while (input != 'q');
+    } while (input != 'q' && input != 'Q');
     clear_memory_space(&snake, &candy);
 }
 
