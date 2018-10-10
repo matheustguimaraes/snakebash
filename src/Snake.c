@@ -309,7 +309,7 @@ void initiate_game(Snake *snake, Candy *candy) {
         if (choice == 'n' || choice == 'N') {
             set_snake(snake, 1);
             set_candy(candy, 1);
-        } else if (choice == 'r') {
+        } else if (choice == 'r' || choice == 'R') {
             read_game(snake, candy);
         }
     } while (choice != 'r' && choice != 'n' && choice != 'R' && choice != 'N');
