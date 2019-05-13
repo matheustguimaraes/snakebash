@@ -1,6 +1,6 @@
 /*
 Algorithm: Snake Game
-Authors: Matheus Guimaraes (@matheusguimr) and Raul Aquino
+Authors: Matheus Guimaraes (@matheustguimaraes) and Raul Aquino
 Discipline: Laboratorio de Programacao (Programming Laboratory), IFCE - 2018.1
 Teacher: Shara Shami
 */
