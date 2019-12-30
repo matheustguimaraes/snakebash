@@ -1,5 +1,7 @@
-# Snake Game
+# Snake Game :snake:
 The classic Snake Game implemented for academic purposes.
+
+![demo](demo.gif)
 
 **NOTE:** (Initially made for Linux, the Windows implementation is in progress)
 
