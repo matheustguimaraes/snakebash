@@ -1,5 +1,5 @@
 # Snake Game :snake:
-The classic Snake Game implemented for academic purposes.
+The classic Snake Game implemented in C programming language.
 
 ![demo](demo.gif)
 
